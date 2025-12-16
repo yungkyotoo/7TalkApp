@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -12,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState // <-- Bu kütüphane eklendi
 import androidx.navigation.compose.rememberNavController
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -19,8 +21,12 @@ import androidx.navigation.compose.rememberNavController
 fun MainScreen() {
     val navController = rememberNavController()
 
+    // --- Hangi ekranda olduğumuzu takip edelim ---
+    // (Onboarding ekranındaysak menüleri gizlemek için gerekli)
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
     // --- Profil Verisi (State) ---
-    // Bu veri değiştiğinde tüm ekranlar güncellenir.
     var userProfile by remember {
         mutableStateOf(
             UserProfile(
@@ -35,25 +41,40 @@ fun MainScreen() {
     }
 
     Scaffold(
-        // Üst Bar: Profil ikonunu buraya koyuyoruz ki her yerden erişilsin
+        // Üst Bar (Sadece Onboarding ekranında değilsek göster)
         topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("7TALK", color = Color(0xFF2244CC)) },
-                actions = {
-                    IconButton(onClick = { navController.navigate(Screen.Profile.route) }) {
-                        Icon(Icons.Default.AccountCircle, contentDescription = "Profilim", tint = Color.Gray)
+            if (currentRoute != Screen.Onboarding.route) {
+                CenterAlignedTopAppBar(
+                    title = { Text("7TALK", color = Color(0xFF2244CC)) },
+                    actions = {
+                        IconButton(onClick = { navController.navigate(Screen.Profile.route) }) {
+                            Icon(Icons.Default.AccountCircle, contentDescription = "Profilim", tint = Color.Gray)
+                        }
+                        IconButton(onClick = { navController.navigate(Screen.Settings.route) }) {
+                            Icon(Icons.Default.Settings, contentDescription = "Ayarlar", tint = Color.Gray)
+                        }
                     }
-                }
-            )
+                )
+            }
         },
-        bottomBar = { BottomNavigationBar(navController = navController) }
+        // Alt Menü (Sadece Onboarding ekranında değilsek göster)
+        bottomBar = {
+            if (currentRoute != Screen.Onboarding.route) {
+                BottomNavigationBar(navController = navController)
+            }
+        }
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Home.route,
+            startDestination = Screen.Onboarding.route, // <-- BAŞLANGIÇ EKRANI ARTIK ONBOARDING
             modifier = Modifier.padding(innerPadding)
         ) {
-            // Ana Sekmeler
+            // --- Giriş / Onboarding (YENİ EKLENEN) ---
+            composable(Screen.Onboarding.route) {
+                OnboardingScreen(navController = navController)
+            }
+
+            // --- Ana Sekmeler ---
             composable(Screen.Home.route) { PlaceholderScreen("Ana Sayfa Akışı") }
             composable(Screen.Search.route) { PlaceholderScreen("Arama Ekranı") }
             composable(Screen.Create.route) { PlaceholderScreen("Başlık Açma") }
@@ -71,10 +92,14 @@ fun MainScreen() {
                     navController = navController,
                     currentProfile = userProfile,
                     onSave = { newName, newBio ->
-                        // Veriyi güncelleme işlemi (copy metodu ile)
                         userProfile = userProfile.copy(name = newName, bio = newBio)
                     }
                 )
+            }
+
+            // --- Ayarlar Sayfası ---
+            composable(Screen.Settings.route) {
+                SettingsScreen(navController = navController)
             }
         }
     }

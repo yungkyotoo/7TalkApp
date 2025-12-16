@@ -12,7 +12,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             _7TalkAppTheme {
-
+                // İşte burayı değiştirdik: Artık bizim hazırladığımız ana ekranı çağırıyoruz.
                 MainScreen()
             }
         }
