@@ -22,7 +22,7 @@ import com.yeditepe.seventalkapp.components.TalkInput
 // Fake colors at the moment
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(onRegisterClick: () -> Unit) {
     // States
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -106,7 +106,7 @@ fun LoginScreen() {
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = darkBlueLogo,
-                            modifier = Modifier.clickable { /* Navigasyon */ }
+                            modifier = Modifier.clickable { onRegisterClick() }
                         )
                     }
                 }
