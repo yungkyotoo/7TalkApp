@@ -8,43 +8,42 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.yeditepe.seventalkapp.screens.LoginScreen
 import com.yeditepe.seventalkapp.screens.RegisterScreen
+import com.yeditepe.seventalkapp.screens.ClubsScreen
 import com.yeditepe.seventalkapp.ui.theme._7TalkAppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-
-
             _7TalkAppTheme {
+                val navController = rememberNavController()
 
 
+                NavHost(navController = navController, startDestination = "login") {
 
 
-            val navController = rememberNavController()
+                    composable("clubs") {
+                        ClubsScreen()
+                    }
 
 
-            NavHost(navController = navController, startDestination = "login") {
+                    composable("login") {
+                        LoginScreen(
+                            onRegisterClick = {
+                                navController.navigate("register")
+                            }
+                        )
+                    }
 
 
-                composable("login") {
-                    LoginScreen(
-                        onRegisterClick = {
-                            navController.navigate("register")
-                        }
-                    )
+                    composable("register") {
+                        RegisterScreen(
+                            onLoginClick = {
+                                navController.popBackStack()
+                            }
+                        )
+                    }
                 }
-
-
-                composable("register") {
-                    RegisterScreen(
-                        onLoginClick = {
-                            navController.popBackStack()
-
-                        }
-                    )
-                }
-            }
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.yeditepe.seventalkapp.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -12,22 +13,23 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.yeditepe.seventalkapp.components.TalkButton
 import com.yeditepe.seventalkapp.components.TalkInput
+import com.yeditepe.seventalkapp.R
 
 
-// Fake colors at the moment
 
 @Composable
 fun LoginScreen(onRegisterClick: () -> Unit) {
-    // States
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    // Fake colors
+
     val blueBackground = Color(0xFFCBE8F9)
     val darkBlueLogo = Color(0xFF152D53)
 
@@ -41,16 +43,18 @@ fun LoginScreen(onRegisterClick: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(24.dp)
         ) {
-            // LOGO AREA
-            Text(
-                text = "7ALK", // Buraya ileride resim (Image) gelecek
-                fontSize = 40.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = darkBlueLogo,
-                modifier = Modifier.padding(bottom = 32.dp)
+
+            Image(
+
+                painter = painterResource(id = R.mipmap.ic_launcher_foreground),
+
+                contentDescription = "Uygulama Logosu",
+                modifier = Modifier
+                    .size(150.dp)
+                    .padding(bottom = 24.dp)
             )
 
-            // WHITE CARD AREA
+
             Card(
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 shape = RoundedCornerShape(24.dp),
@@ -62,7 +66,7 @@ fun LoginScreen(onRegisterClick: () -> Unit) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
-                    // Email Input
+
                     TalkInput(
                         value = email,
                         onValueChange = { email = it },
@@ -70,7 +74,7 @@ fun LoginScreen(onRegisterClick: () -> Unit) {
                         icon = Icons.Default.Email
                     )
 
-                    // Password Input
+
                     TalkInput(
                         value = password,
                         onValueChange = { password = it },
@@ -81,13 +85,13 @@ fun LoginScreen(onRegisterClick: () -> Unit) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Login Button
+
                     TalkButton(text = "Giriş") {
 
                         println("Giriş butonuna basıldı: $email")
                     }
 
-                    // Alt Links
+
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
