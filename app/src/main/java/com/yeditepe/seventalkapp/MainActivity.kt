@@ -20,18 +20,16 @@ class MainActivity : ComponentActivity() {
             _7TalkAppTheme {
                 val navController = rememberNavController()
 
-                // Başlangıç rotası: LOGIN
                 NavHost(navController = navController, startDestination = "login") {
 
-                    // 1. GİRİŞ EKRANI
+                    // 1. LOGIN EKRANI
                     composable("login") {
                         LoginScreen(
                             onRegisterClick = {
                                 navController.navigate("register")
                             },
-                            onLoginClick = {
-                                // Login butonuna basınca varsayılan bir isimle gitsin
-                                navController.navigate("home/Ahmet Töz") {
+                            onLoginSuccess = { userName ->
+                                navController.navigate("home/$userName/${R.drawable.ppgroup1}") {
                                     popUpTo("login") { inclusive = true }
                                 }
                             }
@@ -44,29 +42,29 @@ class MainActivity : ComponentActivity() {
                             onLoginClick = {
                                 navController.popBackStack()
                             },
-                            // Kayıt başarılı olunca girilen ismi alıp Home'a yolluyoruz
-                            onRegisterSuccess = { fullName ->
-                                navController.navigate("home/$fullName") {
+                            onRegisterSuccess = { fullName, avatarId ->
+                                navController.navigate("home/$fullName/$avatarId") {
                                     popUpTo("login") { inclusive = true }
                                 }
                             }
                         )
                     }
 
-                    // 3. ANA EKRAN (Parametre alıyor: {userName})
+                    // 3. ANA EKRAN
                     composable(
-                        route = "home/{userName}",
-                        arguments = listOf(navArgument("userName") { type = NavType.StringType })
+                        route = "home/{userName}/{avatarId}",
+                        arguments = listOf(
+                            navArgument("userName") { type = NavType.StringType },
+                            navArgument("avatarId") { type = NavType.IntType }
+                        )
                     ) { backStackEntry ->
-
-                        // Gelen ismi paket içinden çıkarıyoruz
                         val incomingName = backStackEntry.arguments?.getString("userName") ?: "Misafir"
+                        val incomingAvatar = backStackEntry.arguments?.getInt("avatarId") ?: R.drawable.ppgroup1
 
                         HomeScreen(
-                            userName = incomingName, // İsmi ekrana veriyoruz
-                            onClubClick = { id ->
-                                println("Tıklanan Kulüp ID: $id")
-                            }
+                            userName = incomingName,
+                            userAvatar = incomingAvatar,
+                            onClubClick = { id -> println("Tıklanan Kulüp ID: $id") }
                         )
                     }
                 }
