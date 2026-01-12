@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -17,10 +16,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.yeditepe.seventalkapp.R // R.drawable importu için önemli
+import com.yeditepe.seventalkapp.R
 
 @Composable
 fun SidebarContent(
@@ -31,7 +29,7 @@ fun SidebarContent(
     Column(
         modifier = Modifier
             .fillMaxHeight()
-            .width(300.dp) // Menü genişliği
+            .width(300.dp)
             .background(brandBlue)
             .padding(16.dp)
     ) {
@@ -45,24 +43,33 @@ fun SidebarContent(
         // 2. TOPLULUKLARIN BAŞLIĞI
         Text("Toplulukların", color = Color.White, fontSize = 14.sp, modifier = Modifier.padding(bottom = 12.dp))
 
-        // Topluluk Listesi (Resimlerini R.drawable.xxx varsa değiştirebilirsin)
-        SidebarCommunityItem(text = "Basketbol", iconRes = R.drawable.ppgroup1) // Örnek resim
-        SidebarCommunityItem(text = "Dans", iconRes = R.drawable.ppgroup2)
-        SidebarCommunityItem(text = "Dağcılık", iconRes = R.drawable.ppgroup3)
+        SidebarCommunityItem(
+            text = "Basketbol",
+            iconRes = R.drawable.basketball,
+            onClick = { onMenuItemClick("Club_1") }
+        )
+        SidebarCommunityItem(
+            text = "Dans",
+            iconRes = R.drawable.dans,
+            onClick = { onMenuItemClick("Club_2") }
+        )
+        SidebarCommunityItem(
+            text = "Dağcılık",
+            iconRes = R.drawable.dagcilik,
+            onClick = { onMenuItemClick("Club_3") }
+        )
 
         Divider(color = Color.White.copy(alpha = 0.3f), modifier = Modifier.padding(vertical = 16.dp))
 
         // 3. 7TALK BÖLÜMÜ
         Text("7Talk:", color = Color.White, fontSize = 14.sp, modifier = Modifier.padding(bottom = 12.dp))
 
-        SidebarItem(icon = Icons.Default.Info, text = "Sözleşmeler", onClick = {onMenuItemClick("Contracts")})
+        SidebarItem(icon = Icons.Default.Info, text = "Sözleşmeler", onClick = { onMenuItemClick("Contracts") })
         SidebarItem(icon = Icons.Default.List, text = "Kurallar", onClick = {})
-        SidebarItem(icon = Icons.Default.Call, text = "İletişim", onClick = {onMenuItemClick("Contact")})
-        SidebarItem(icon = Icons.Default.Face, text = "Sıkça Sorulan Sorular", onClick = {onMenuItemClick("SSS")})
+        SidebarItem(icon = Icons.Default.Call, text = "İletişim", onClick = { onMenuItemClick("Contact") })
+        SidebarItem(icon = Icons.Default.Face, text = "Sıkça Sorulan Sorular", onClick = { onMenuItemClick("SSS") })
     }
 }
-
-// --- YARDIMCI BİLEŞENLER ---
 
 @Composable
 fun SidebarItem(icon: ImageVector, text: String, onClick: () -> Unit) {
@@ -80,14 +87,14 @@ fun SidebarItem(icon: ImageVector, text: String, onClick: () -> Unit) {
 }
 
 @Composable
-fun SidebarCommunityItem(text: String, iconRes: Int) {
+fun SidebarCommunityItem(text: String, iconRes: Int, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable { onClick() }
             .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Yuvarlak Topluluk Resmi
         Image(
             painter = painterResource(id = iconRes),
             contentDescription = null,
@@ -101,4 +108,3 @@ fun SidebarCommunityItem(text: String, iconRes: Int) {
         Text(text = text, color = Color.White, fontSize = 16.sp)
     }
 }
-

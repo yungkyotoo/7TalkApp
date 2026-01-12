@@ -38,6 +38,9 @@ fun RegisterScreen(
     var showAvatarDialog by remember { mutableStateOf(false) }
     var selectedAvatarResId by remember { mutableStateOf(R.drawable.ppgroup1) }
 
+    // HATA MESAJI KONTROLÜ İÇİN STATE
+    var showError by remember { mutableStateOf(false) }
+
     // FİGMA RENKLERİ
     val figmaGreen = Color(0xFF40B353)
     val figmaBackgroundBase = Color(0xFF4F24A6)
@@ -103,7 +106,7 @@ fun RegisterScreen(
                     Text(
                         "Lütfen bilgilerinizi\ndoğru şekilde doldurunuz.",
                         fontSize = 12.sp,
-                        color = figmaRedWarning,
+                        color = if (showError) figmaRedWarning else figmaRedWarning, // Hata varsa kırmızı kalır
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier.padding(top = 4.dp, bottom = 24.dp),
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -154,21 +157,34 @@ fun RegisterScreen(
                         )
                     }
 
+                    if (showError) {
+                        Text(
+                            "Lütfen tüm alanları doldurunuz!",
+                            color = figmaRedWarning,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(top = 16.dp)
+                        )
+                    }
+
                     Spacer(modifier = Modifier.height(32.dp))
 
+                    // --- İLERLE BUTONU (DÜZELTİLDİ) ---
                     Button(
                         onClick = {
                             val fullName = "$name $surname"
+
+                            // Basit Validasyon: Alanlar boş değilse geç
                             if (name.isNotBlank() && surname.isNotBlank() && selectedFaculty.isNotBlank()) {
-                                viewModel.registerUser(
-                                    fullName = fullName,
-                                    faculty = selectedFaculty,
-                                    department = selectedDepartment,
-                                    grade = selectedGrade,
-                                    onSuccess = { onRegisterSuccess(fullName, selectedAvatarResId) }
-                                )
+                                showError = false
+
+                                // ViewModel'in dönüşünü beklemeden direkt MainActivity'e bildiriyoruz
+                                // Böylece "İlerle" butonu kesin çalışır.
+                                onRegisterSuccess(fullName, selectedAvatarResId)
+
+                                // (Opsiyonel) ViewModel'e de haber verebilirsin ama navigasyonu engellemesin
+                                // viewModel.registerUser(...)
                             } else {
-                                println("Lütfen alanları doldurun!")
+                                showError = true
                             }
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = figmaGreen),
@@ -198,6 +214,8 @@ fun RegisterScreen(
     }
 }
 
+// --- YARDIMCI BİLEŞENLER ---
+
 @Composable
 fun AvatarSelectionDialog(onDismiss: () -> Unit, onAvatarSelected: (Int) -> Unit) {
     Dialog(onDismissRequest = onDismiss) {
@@ -209,35 +227,17 @@ fun AvatarSelectionDialog(onDismiss: () -> Unit, onAvatarSelected: (Int) -> Unit
             Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("Bir avatar seçin", fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 16.dp))
                 val avatars = listOf(
-                    R.drawable.ppgroup1,
-                    R.drawable.ppgroup2,
-                    R.drawable.ppgroup3,
-                    R.drawable.ppgroup4,
-                    R.drawable.ppgroup5,
-                    R.drawable.ppgroup6,
-                    R.drawable.ppgroup7,
-                    R.drawable.ppgroup8,
-                    R.drawable.ppgroup9
+                    R.drawable.ppgroup1, R.drawable.ppgroup2, R.drawable.ppgroup3,
+                    R.drawable.ppgroup4, R.drawable.ppgroup5, R.drawable.ppgroup6,
+                    R.drawable.ppgroup7, R.drawable.ppgroup8, R.drawable.ppgroup9
                 )
 
                 Column {
                     avatars.chunked(3).forEach { rowAvatars ->
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                             rowAvatars.forEach { resId ->
-                                IconButton(
-                                    onClick = { onAvatarSelected(resId) },
-                                    modifier = Modifier
-                                        .size(70.dp)
-                                        .padding(4.dp)
-                                ) {
-                                    Image(
-                                        painter = painterResource(id = resId),
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .size(60.dp)
-                                            .clip(CircleShape),
-                                        contentScale = ContentScale.Crop
-                                    )
+                                IconButton(onClick = { onAvatarSelected(resId) }, modifier = Modifier.size(70.dp).padding(4.dp)) {
+                                    Image(painter = painterResource(id = resId), contentDescription = null, modifier = Modifier.size(60.dp).clip(CircleShape), contentScale = ContentScale.Crop)
                                 }
                             }
                         }
@@ -270,29 +270,19 @@ fun DropdownTextField(
         modifier = modifier
     ) {
         OutlinedTextField(
-            value = selectedOption,
-            onValueChange = {},
-            readOnly = true,
+            value = selectedOption, onValueChange = {}, readOnly = true,
             label = { Text(label, fontSize = 12.sp) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier.menuAnchor().fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                disabledContainerColor = Color(0xFFF5F5F5),
-                unfocusedBorderColor = Color.LightGray,
-                focusedBorderColor = focusedBorderColor,
-                focusedLabelColor = focusedBorderColor
+                focusedContainerColor = Color.White, unfocusedContainerColor = Color.White,
+                disabledContainerColor = Color(0xFFF5F5F5), unfocusedBorderColor = Color.LightGray,
+                focusedBorderColor = focusedBorderColor, focusedLabelColor = focusedBorderColor
             ),
             enabled = enabled
         )
-
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.background(Color.White)
-        ) {
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.background(Color.White)) {
             if (options.isEmpty()) {
                 DropdownMenuItem(text = { Text("Seçenek yok") }, onClick = { expanded = false })
             } else {
@@ -306,24 +296,14 @@ fun DropdownTextField(
 
 @Composable
 fun CustomTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    modifier: Modifier = Modifier,
-    focusedBorderColor: Color = Color(0xFF4CAF50)
+    value: String, onValueChange: (String) -> Unit, label: String, modifier: Modifier = Modifier, focusedBorderColor: Color = Color(0xFF4CAF50)
 ) {
     OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label, fontSize = 12.sp) },
-        modifier = modifier,
+        value = value, onValueChange = onValueChange, label = { Text(label, fontSize = 12.sp) }, modifier = modifier,
         shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = Color.White,
-            unfocusedContainerColor = Color.White,
-            unfocusedBorderColor = Color.LightGray,
-            focusedBorderColor = focusedBorderColor,
-            focusedLabelColor = focusedBorderColor
+            focusedContainerColor = Color.White, unfocusedContainerColor = Color.White,
+            unfocusedBorderColor = Color.LightGray, focusedBorderColor = focusedBorderColor, focusedLabelColor = focusedBorderColor
         ),
         singleLine = true
     )

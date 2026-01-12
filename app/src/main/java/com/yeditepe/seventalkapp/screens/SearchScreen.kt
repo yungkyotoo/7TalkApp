@@ -13,62 +13,74 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.yeditepe.seventalkapp.R
+
+// --- VERİ MODELLERİ ---
+data class SearchItem(
+    val title: String,
+    val type: SearchType,
+    val id: Int? = null // Kulüpler için ID (Basketbol = 1)
+)
+
+enum class SearchType { TAG, CLUB }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
     navController: NavController,
-    currentUserName: String, // Alt bardan home'a dönerken lazım olacak
-    currentUserAvatar: Int   // Alt bardan home'a dönerken lazım olacak
+    currentUserName: String,
+    currentUserAvatar: Int
 ) {
-    // --- ARAMA MANTIĞI VE VERİLER ---
-
-    // 1. Arama çubuğuna yazılan yazı (State)
+    // Arama metni
     var searchQuery by remember { mutableStateOf("") }
 
-    // 2. Tüm Etiket Listesi (Veritabanı gibi düşün)
-    val allTags = listOf(
+    // --- 1. VERİLERİ HAZIRLA ---
+
+    // Etiketler
+    val tagList = listOf(
         "#vcd", "#yemekhane", "#etkinlik", "#yurt", "#not",
-        "#rektorluk", "#ikinciel", "#oyun", "#camlık", "#kırmızı",
-        "#mavi", "#vizeler", "#finaller", "#festival", "#kampus",
-        "#kedi", "#köpek", "#muhendislik", "#mimarlık", "#tıp"
+        "#rektorluk", "#ikinciel", "#oyun", "#camlık", "#vizeler"
+    ).map { SearchItem(it, SearchType.TAG) }
+
+    // Kulüpler (ID'LERİ ÖNEMLİ)
+    val clubList = listOf(
+        SearchItem("Basketbol Kulübü", SearchType.CLUB, id = 1), // ID = 1 Basketbol Sayfasına Gider
+        SearchItem("Dans Kulübü", SearchType.CLUB, id = 2),
+        SearchItem("Dağcılık Kulübü", SearchType.CLUB, id = 3),
+        SearchItem("E-Spor Kulübü", SearchType.CLUB, id = 4),
+        SearchItem("Tiyatro Kulübü", SearchType.CLUB, id = 5)
     )
 
-    // 3. Filtrelenmiş Liste (Ekranda gösterilecek olan)
-    // Eğer arama kutusu boşsa hepsini göster, doluysa içinde geçeni göster
-    val filteredTags = if (searchQuery.isEmpty()) {
-        allTags
+    // Listeleri birleştir
+    val allItems = clubList + tagList
+
+    // --- 2. FİLTRELEME ---
+    val filteredItems = if (searchQuery.isEmpty()) {
+        allItems
     } else {
-        allTags.filter { it.contains(searchQuery, ignoreCase = true) }
+        allItems.filter { it.title.contains(searchQuery, ignoreCase = true) }
     }
 
     Scaffold(
-        // --- ÜST KISIM (ARAMA ÇUBUĞU) ---
         topBar = {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 8.dp)
             ) {
-                // Görseldeki gibi Yuvarlak Kenarlı Arama Çubuğu
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp), // Standart yükseklik
-                    placeholder = { Text("Ara...", color = Color.Gray) },
-                    trailingIcon = {
-                        Icon(Icons.Default.Search, contentDescription = "Ara", tint = Color.Black)
-                    },
-                    shape = RoundedCornerShape(50), // Tam yuvarlak kenarlar (Hap şekli)
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    placeholder = { Text("Ara (Örn: Basketbol)", color = Color.Gray) },
+                    trailingIcon = { Icon(Icons.Default.Search, "Ara", tint = Color.Black) },
+                    shape = RoundedCornerShape(50),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFF1976D2), // Tıklanınca Mavi (Logonun rengi)
-                        unfocusedBorderColor = Color(0xFF1976D2), // Tıklanmayınca da Mavi çerçeve
+                        focusedBorderColor = Color(0xFF1976D2),
+                        unfocusedBorderColor = Color(0xFF1976D2),
                         focusedContainerColor = Color.White,
                         unfocusedContainerColor = Color.White,
                         cursorColor = Color.Black
@@ -78,28 +90,24 @@ fun SearchScreen(
                 )
             }
         },
-        // --- ALT MENÜ (NAVIGASYON) ---
         bottomBar = {
             NavigationBar(containerColor = Color.White, tonalElevation = 8.dp) {
-                // Home Butonu (Tıklayınca Ana Sayfaya Döner)
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Home, null) },
                     label = { Text("Ana Sayfa") },
                     selected = false,
                     onClick = {
-                        // Home'a geri dön (Stack'i temizleyerek)
                         navController.navigate("home/$currentUserName/$currentUserAvatar") {
                             popUpTo("home/$currentUserName/$currentUserAvatar") { inclusive = true }
                         }
                     },
                     colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFFE3F2FD))
                 )
-                // Ara Butonu (Şu an buradayız, o yüzden selected = true)
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Search, null) },
                     label = { Text("Ara") },
-                    selected = true, // Seçili olduğu belli olsun
-                    onClick = { /* Zaten buradayız */ },
+                    selected = true,
+                    onClick = { },
                     colors = NavigationBarItemDefaults.colors(indicatorColor = Color(0xFFE3F2FD))
                 )
                 NavigationBarItem(icon = { Icon(Icons.Default.AddCircle, null) }, label = { Text("Başlık Aç") }, selected = false, onClick = {})
@@ -108,15 +116,13 @@ fun SearchScreen(
             }
         }
     ) { paddingValues ->
-        // --- LİSTE KISMI ---
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp) // Kenarlardan boşluk
+                .padding(horizontal = 16.dp)
         ) {
-            // Eğer arama sonucu boşsa kullanıcıya bilgi verelim
-            if (filteredTags.isEmpty()) {
+            if (filteredItems.isEmpty()) {
                 item {
                     Box(modifier = Modifier.fillMaxWidth().padding(top = 32.dp), contentAlignment = Alignment.Center) {
                         Text("Sonuç bulunamadı :(", color = Color.Gray)
@@ -124,30 +130,42 @@ fun SearchScreen(
                 }
             }
 
-            // Listeyi Ekrana Basma
-            items(filteredTags) { tag ->
+            items(filteredItems) { item ->
                 Column {
-                    Box(
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 16.dp) // Görseldeki gibi geniş aralık
                             .clickable {
-                                // Buraya tıklayınca ne olacağını yazabilirsin (İlerde detay sayfasına gider)
-                                println("$tag tıklandı")
-                            },
-                        contentAlignment = Alignment.Center // Yazıyı ortala
+                                // --- YÖNLENDİRME MANTIĞI BURADA ---
+                                if (item.type == SearchType.CLUB && item.id != null) {
+                                    // Eğer Basketbol ise (id=1), club_detail/1 rotasına gider
+                                    navController.navigate("club_detail/${item.id}")
+                                } else {
+                                    println("${item.title} tıklandı (Etiket)")
+                                }
+                            }
+                            .padding(vertical = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        // İkon Seçimi (Kulüp -> İnsan, Etiket -> Liste)
+                        Icon(
+                            imageVector = if (item.type == SearchType.CLUB) Icons.Default.Person else Icons.Default.List,
+                            contentDescription = null,
+                            tint = if (item.type == SearchType.CLUB) Color(0xFF1976D2) else Color.Gray,
+                            modifier = Modifier.size(24.dp)
+                        )
+
+                        Spacer(modifier = Modifier.width(16.dp))
+
                         Text(
-                            text = tag,
+                            text = item.title,
                             fontSize = 18.sp,
-                            color = Color(0xFF616161) // Koyu gri tonu
+                            color = if (item.type == SearchType.CLUB) Color.Black else Color(0xFF616161)
                         )
                     }
-                    // Her elemanın altına ince çizgi (Divider)
                     Divider(color = Color(0xFFEEEEEE), thickness = 1.dp)
                 }
             }
         }
     }
 }
-

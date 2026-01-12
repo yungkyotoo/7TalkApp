@@ -41,7 +41,7 @@ fun HomeScreen(
     onAddClick: () -> Unit,
     onFaqClick: () -> Unit,
     onContactClick: () -> Unit,
-    onContractsClick: () -> Unit // <--- YENİ EKLENEN PARAMETRE (Sözleşmeler için)
+    onContractsClick: () -> Unit
 ) {
     val clubs by viewModel.clubs.collectAsState()
     var selectedItem by remember { mutableStateOf(0) }
@@ -62,13 +62,17 @@ fun HomeScreen(
                     onMenuItemClick = { item ->
                         scope.launch { drawerState.close() }
 
-                        // Sidebardan gelen tıklamaları yönetiyoruz
-                        if (item == "SSS") {
-                            onFaqClick()
-                        } else if (item == "Contact") {
-                            onContactClick()
-                        } else if (item == "Contracts") { // <--- SÖZLEŞMELER TIKLANDI MI?
-                            onContractsClick()
+                        when (item) {
+                            "SSS" -> onFaqClick()
+                            "Contact" -> onContactClick()
+                            "Contracts" -> onContractsClick()
+
+
+                            "Club_1" -> onClubClick(1)
+                            "Club_2" -> onClubClick(2)
+                            "Club_3" -> onClubClick(3)
+
+                            else -> println("$item tıklandı")
                         }
                     }
                 )
@@ -87,7 +91,7 @@ fun HomeScreen(
                         Image(
                             painter = painterResource(id = R.drawable.img_7alkhomescreen),
                             contentDescription = "Logo",
-                            modifier = Modifier.height(28.dp).wrapContentWidth(Alignment.Start),
+                            modifier = Modifier.height(250.dp).wrapContentWidth(Alignment.Start),
                             contentScale = ContentScale.Fit
                         )
                     },

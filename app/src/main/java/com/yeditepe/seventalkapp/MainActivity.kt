@@ -8,15 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.yeditepe.seventalkapp.screens.ContactScreen
-import com.yeditepe.seventalkapp.screens.ContractsScreen // YENİ IMPORT
-import com.yeditepe.seventalkapp.screens.CreatePostScreen
-import com.yeditepe.seventalkapp.screens.FaqScreen
-import com.yeditepe.seventalkapp.screens.HomeScreen
-import com.yeditepe.seventalkapp.screens.LoginScreen
-import com.yeditepe.seventalkapp.screens.ProfileScreen
-import com.yeditepe.seventalkapp.screens.RegisterScreen
-import com.yeditepe.seventalkapp.screens.SearchScreen
+import com.yeditepe.seventalkapp.screens.*
 import com.yeditepe.seventalkapp.ui.theme._7TalkAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -40,11 +32,12 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    // 2. REGISTER
+                    // 2. REGISTER (DÜZELTİLDİ: Direkt Home'a gidiyor)
                     composable("register") {
                         RegisterScreen(
                             onLoginClick = { navController.popBackStack() },
                             onRegisterSuccess = { fullName, avatarId ->
+                                // interest_selection yerine direkt home'a yönlendiriyoruz
                                 navController.navigate("home/$fullName/$avatarId") {
                                     popUpTo("login") { inclusive = true }
                                 }
@@ -52,7 +45,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    // 3. HOME
+                    // 3. HOME (DÜZELTİLDİ: interests parametresi kaldırıldı)
                     composable(
                         route = "home/{userName}/{avatarId}",
                         arguments = listOf(
@@ -66,17 +59,20 @@ class MainActivity : ComponentActivity() {
                         HomeScreen(
                             userName = incomingName,
                             userAvatar = incomingAvatar,
-                            onClubClick = { id -> println("Kulüp ID: $id") },
+                            onClubClick = { clubId ->
+                                navController.navigate("club_detail/$clubId")
+                            },
+                            // Sadece isim ve avatar ile gidiyoruz
                             onProfileClick = { navController.navigate("profile/$incomingName/$incomingAvatar") },
                             onSearchClick = { navController.navigate("search/$incomingName/$incomingAvatar") },
                             onAddClick = { navController.navigate("create_post/$incomingName/$incomingAvatar") },
                             onFaqClick = { navController.navigate("faq") },
                             onContactClick = { navController.navigate("contact") },
-                            onContractsClick = { navController.navigate("contracts") } // <--- YENİ BAĞLANTI
+                            onContractsClick = { navController.navigate("contracts") }
                         )
                     }
 
-                    // 4. PROFILE
+                    // 4. PROFİL EKRANI
                     composable(
                         route = "profile/{userName}/{avatarId}",
                         arguments = listOf(
@@ -90,7 +86,21 @@ class MainActivity : ComponentActivity() {
                         ProfileScreen(
                             userName = incomingName,
                             userAvatar = incomingAvatar,
-                            onBackClick = { navController.popBackStack() }
+                            onBackClick = {
+                                navController.popBackStack()
+                            },
+                            onSidebarItemClick = { item ->
+                                when (item) {
+                                    "SSS" -> navController.navigate("faq")
+                                    "Contact" -> navController.navigate("contact")
+                                    "Contracts" -> navController.navigate("contracts")
+                                    "Club_1" -> navController.navigate("club_detail/1")
+                                    "Club_2" -> navController.navigate("club_detail/2")
+                                    "Club_3" -> navController.navigate("club_detail/3")
+                                    "Ayarlar" -> { /* Ayarlar sayfası rotası eklenebilir */ }
+                                    else -> println("$item tıklandı")
+                                }
+                            }
                         )
                     }
 
@@ -140,9 +150,21 @@ class MainActivity : ComponentActivity() {
                         ContactScreen(onBackClick = { navController.popBackStack() })
                     }
 
-                    // 9. SÖZLEŞMELER (CONTRACTS) - YENİ
+                    // 9. SÖZLEŞMELER (CONTRACTS)
                     composable("contracts") {
                         ContractsScreen(onBackClick = { navController.popBackStack() })
+                    }
+
+                    // 10. KULÜP DETAY EKRANI
+                    composable(
+                        route = "club_detail/{clubId}",
+                        arguments = listOf(navArgument("clubId") { type = NavType.IntType })
+                    ) {
+                        val clubId = it.arguments?.getInt("clubId") ?: 0
+                        ClubDetailScreen(
+                            clubId = clubId,
+                            onBackClick = { navController.popBackStack() }
+                        )
                     }
                 }
             }
