@@ -40,7 +40,7 @@ fun ProfileScreen(
     userName: String,
     userAvatar: Int,
     onBackClick: () -> Unit,
-    onSidebarItemClick: (String) -> Unit
+    onSidebarItemClick: (String) -> Unit // Sidebar tıklamalarını yönetmek için
 ) {
     // --- STATE YÖNETİMİ ---
     var currentName by remember { mutableStateOf(userName) }
@@ -55,6 +55,7 @@ fun ProfileScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
+    // --- DÜZENLEME PENCERESİ ---
     if (showEditDialog) {
         EditProfileDialog(
             currentName = currentName,
@@ -71,7 +72,7 @@ fun ProfileScreen(
         )
     }
 
-    // TÜM SAYFAYI DRAWER İÇİNE ALIYORUZ
+    // --- TÜM SAYFAYI DRAWER İLE SARIYORUZ ---
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -89,12 +90,12 @@ fun ProfileScreen(
             }
         }
     ) {
-        //  SCAFFOLD
+        // --- ANA İÇERİK (SCAFFOLD) ---
         Scaffold(
             topBar = {
                 TopAppBar(
                     navigationIcon = {
-
+                        // HAMBURGER MENÜ BUTONU
                         IconButton(onClick = {
                             scope.launch { drawerState.open() }
                         }) {
@@ -105,7 +106,7 @@ fun ProfileScreen(
                         Image(
                             painter = painterResource(id = R.drawable.img_7alkhomescreen),
                             contentDescription = "Logo",
-                            modifier = Modifier.height(250.dp),
+                            modifier = Modifier.height(28.dp).wrapContentWidth(Alignment.Start),
                             contentScale = ContentScale.Fit
                         )
                     },
@@ -165,14 +166,24 @@ fun ProfileScreen(
                     )
                     Divider(modifier = Modifier.padding(horizontal = 16.dp), color = Color.LightGray)
                 }
+                // POST LİSTESİ (CANLI VERİ)
                 val posts = PostManager.posts
                 items(posts) { post ->
-                    PostItem(post, currentName, currentAvatar)
+                    PostItem(
+                        post = post,
+                        userName = currentName,
+                        userAvatar = currentAvatar,
+                        onFavoriteClick = { clickedPost ->
+                            PostManager.toggleFavorite(clickedPost)
+                        }
+                    )
                 }
             }
         }
     }
 }
+
+// --- YARDIMCI BİLEŞENLER ---
 
 @Composable
 fun FilterChipsRow(interestList: List<String>) {
@@ -194,10 +205,14 @@ fun FilterChipsRow(interestList: List<String>) {
 }
 
 @Composable
-fun EditProfileDialog(currentName: String, currentBio: String, currentAvatar: Int, currentInterests: List<String>, onDismiss: () -> Unit, onSave: (String, String, Int) -> Unit) {
-    // ... (Senin mevcut kodunla aynı) ...
-    // Burayı uzunluk olmasın diye kısalttım, senin dosyadaki haliyle kalsın.
-    // Eğer burası lazımsa söyleyebilirsin ama değişmedi.
+fun EditProfileDialog(
+    currentName: String,
+    currentBio: String,
+    currentAvatar: Int,
+    currentInterests: List<String>,
+    onDismiss: () -> Unit,
+    onSave: (String, String, Int) -> Unit
+) {
     var tempName by remember { mutableStateOf(currentName) }
     var tempBio by remember { mutableStateOf(currentBio) }
     var tempAvatar by remember { mutableStateOf(currentAvatar) }
@@ -263,8 +278,14 @@ fun ProfileHeaderSection(userName: String, userBio: String, userAvatar: Int, onE
     }
 }
 
+// GÜNCELLENMİŞ POST ITEM (FAVORİ ÖZELLİĞİ EKLİ)
 @Composable
-fun PostItem(post: PostData, userName: String, userAvatar: Int) {
+fun PostItem(
+    post: PostData,
+    userName: String,
+    userAvatar: Int,
+    onFavoriteClick: (PostData) -> Unit = {}
+) {
     Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5))) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -276,7 +297,25 @@ fun PostItem(post: PostData, userName: String, userAvatar: Int) {
             Text(post.title, fontWeight = FontWeight.Bold, fontSize = 15.sp)
             Text(post.content, fontSize = 13.sp, color = Color.DarkGray)
             Spacer(modifier = Modifier.height(12.dp))
-            Row { Icon(Icons.Default.ThumbUp, null, tint = Color.Gray); Spacer(modifier = Modifier.width(16.dp)); Icon(Icons.Default.Email, null, tint = Color.Gray) }
+
+            // Alt Butonlar
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.ThumbUp, null, tint = Color.Gray, modifier = Modifier.size(16.dp))
+                Spacer(modifier = Modifier.width(16.dp))
+                Icon(Icons.Default.Email, null, tint = Color.Gray, modifier = Modifier.size(16.dp))
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                // --- YILDIZ İKONU ---
+                Icon(
+                    imageVector = Icons.Default.Star,
+                    contentDescription = "Favori",
+                    tint = if (post.isFavorite) Color(0xFFFFC107) else Color.Gray, // Sarı veya Gri
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable { onFavoriteClick(post) }
+                )
+            }
         }
     }
 }

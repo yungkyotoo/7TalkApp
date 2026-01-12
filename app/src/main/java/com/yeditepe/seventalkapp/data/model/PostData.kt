@@ -1,21 +1,32 @@
-// Dosyan 'model' klasöründe olduğu için paket ismi böyle olmalı:
 package com.yeditepe.seventalkapp.data.model
 
 import androidx.compose.runtime.mutableStateListOf
 
 // Gönderi Veri Modeli
-data class PostData(val title: String, val content: String)
+// isFavorite: Boolean = false eklendi (Varsayılan olarak favori değil)
+data class PostData(
+    val title: String,
+    val content: String,
+    val isFavorite: Boolean = false
+)
 
-// ORTAK POST KUTUSU (PostManager)
+// ORTAK POST KUTUSU
 object PostManager {
-    // Başlangıç örnek verileri
     val posts = mutableStateListOf(
-        PostData("7Talk Valorant odası", "gerçekten rekabetçi işine gönül vermiş..."),
-        PostData("Yeni bir oyun tavsiyesi: Hollow Horizon", "Son zamanlarda oynadığım...")
+        PostData("7Talk Valorant odası", "gerçekten rekabetçi işine gönül vermiş...", false),
+        PostData("Yeni bir oyun tavsiyesi: Hollow Horizon", "Son zamanlarda oynadığım...", false)
     )
 
     fun addPost(post: PostData) {
-        // Yeni gönderiyi listenin EN BAŞINA ekle
         posts.add(0, post)
+    }
+
+    // YENİ: Favori durumunu tersine çeviren fonksiyon
+    fun toggleFavorite(post: PostData) {
+        val index = posts.indexOf(post)
+        if (index != -1) {
+            // Veriyi kopyalayıp true ise false, false ise true yapıyoruz
+            posts[index] = posts[index].copy(isFavorite = !post.isFavorite)
+        }
     }
 }

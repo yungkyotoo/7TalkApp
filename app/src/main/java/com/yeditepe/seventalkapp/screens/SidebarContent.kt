@@ -29,35 +29,29 @@ fun SidebarContent(
     Column(
         modifier = Modifier
             .fillMaxHeight()
-            .width(300.dp)
+            .width(300.dp) // Menü genişliği
             .background(brandBlue)
             .padding(16.dp)
     ) {
         Spacer(modifier = Modifier.height(32.dp))
 
-        // 1. AYARLAR
-        SidebarItem(icon = Icons.Default.Settings, text = "Ayarlar", onClick = { onMenuItemClick("Ayarlar") })
+        // 1. AYARLAR (Sorun muhtemelen buradaydı)
+        SidebarItem(
+            icon = Icons.Default.Settings,
+            text = "Ayarlar",
+            // ÖNEMLİ: Burası "Ayarlar" stringini göndermeli!
+            onClick = { onMenuItemClick("Ayarlar") }
+        )
 
         Divider(color = Color.White.copy(alpha = 0.3f), modifier = Modifier.padding(vertical = 16.dp))
 
         // 2. TOPLULUKLARIN BAŞLIĞI
         Text("Toplulukların", color = Color.White, fontSize = 14.sp, modifier = Modifier.padding(bottom = 12.dp))
 
-        SidebarCommunityItem(
-            text = "Basketbol",
-            iconRes = R.drawable.basketball,
-            onClick = { onMenuItemClick("Club_1") }
-        )
-        SidebarCommunityItem(
-            text = "Dans",
-            iconRes = R.drawable.dans,
-            onClick = { onMenuItemClick("Club_2") }
-        )
-        SidebarCommunityItem(
-            text = "Dağcılık",
-            iconRes = R.drawable.dagcilik,
-            onClick = { onMenuItemClick("Club_3") }
-        )
+        // Kulüpler (Tıklanınca ID gönderiyor)
+        SidebarCommunityItem(text = "Basketbol", iconRes = R.drawable.ppgroup1, onClick = { onMenuItemClick("Club_1") })
+        SidebarCommunityItem(text = "Dans", iconRes = R.drawable.ppgroup2, onClick = { onMenuItemClick("Club_2") })
+        SidebarCommunityItem(text = "Dağcılık", iconRes = R.drawable.ppgroup3, onClick = { onMenuItemClick("Club_3") })
 
         Divider(color = Color.White.copy(alpha = 0.3f), modifier = Modifier.padding(vertical = 16.dp))
 
@@ -65,11 +59,13 @@ fun SidebarContent(
         Text("7Talk:", color = Color.White, fontSize = 14.sp, modifier = Modifier.padding(bottom = 12.dp))
 
         SidebarItem(icon = Icons.Default.Info, text = "Sözleşmeler", onClick = { onMenuItemClick("Contracts") })
-        SidebarItem(icon = Icons.Default.List, text = "Kurallar", onClick = {})
+        SidebarItem(icon = Icons.Default.List, text = "Kurallar", onClick = { /* Kurallar sayfası varsa buraya eklenir */ })
         SidebarItem(icon = Icons.Default.Call, text = "İletişim", onClick = { onMenuItemClick("Contact") })
         SidebarItem(icon = Icons.Default.Face, text = "Sıkça Sorulan Sorular", onClick = { onMenuItemClick("SSS") })
     }
 }
+
+// --- YARDIMCI BİLEŞENLER ---
 
 @Composable
 fun SidebarItem(icon: ImageVector, text: String, onClick: () -> Unit) {
@@ -91,7 +87,7 @@ fun SidebarCommunityItem(text: String, iconRes: Int, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
+            .clickable { onClick() } // Tıklama özelliği eklendi
             .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
