@@ -70,13 +70,89 @@ fun HomeScreen(
     ) {
         Scaffold(
             topBar = {
+                // Sadece Ana Sayfa (0) seçiliyken TopBar görünür
                 if (selectedItem == 0) {
                     TopAppBar(
-                        navigationIcon = { IconButton(onClick = { scope.launch { drawerState.open() } }) { Icon(Icons.Default.Menu, "Menü", tint = Color.White, modifier = Modifier.size(32.dp)) } },
-                        title = { Image(painter = painterResource(id = R.drawable.img_7alkhomescreen), contentDescription = "Logo", modifier = Modifier.height(28.dp).wrapContentWidth(Alignment.Start), contentScale = ContentScale.Fit) },
+                        navigationIcon = {
+                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                Icon(
+                                    imageVector = Icons.Default.Menu,
+                                    contentDescription = "Menü",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(32.dp)
+                                )
+                            }
+                        },
+                        title = {
+                            Image(
+                                painter = painterResource(id = R.drawable.img_7alkhomescreen),
+                                contentDescription = "Logo",
+                                modifier = Modifier
+                                    .height(28.dp)
+                                    .wrapContentWidth(Alignment.Start),
+                                contentScale = ContentScale.Fit
+                            )
+                        },
                         actions = {
-                            BadgedBox(badge = { Badge(containerColor = Color.Red, contentColor = Color.White) { Text("1") } }, modifier = Modifier.padding(end = 12.dp)) { Icon(Icons.Default.Notifications, "Bildirimler", tint = Color.White, modifier = Modifier.size(28.dp)) }
-                            Image(painter = painterResource(id = userAvatar), contentDescription = "Profil", modifier = Modifier.padding(end = 16.dp).size(40.dp).clip(CircleShape).background(Color(0xFFFFE0B2)).border(1.dp, Color.White, CircleShape).clickable { onProfileClick() }, contentScale = ContentScale.Crop)
+                            // --- 1. Bildirim Kutusu Açık mı? ---
+                            var showNotifications by remember { mutableStateOf(false) }
+
+                            // --- 2. Okunmamış Bildirim Sayısı (Başlangıçta 1) ---
+                            var unreadCount by remember { mutableStateOf(1) }
+
+                            // --- 3. Bildirim Kutusu (Açıksa Göster) ---
+                            if (showNotifications) {
+                                NotificationDropdown(
+                                    onDismiss = { showNotifications = false }
+                                )
+                            }
+
+                            // --- 4. Zil ve Kırmızı Nokta (Badge) ---
+                            BadgedBox(
+                                badge = {
+                                    // Eğer sayı 0'dan büyükse kırmızı noktayı göster
+                                    if (unreadCount > 0) {
+                                        Badge(
+                                            containerColor = Color.Red,
+                                            contentColor = Color.White
+                                        ) {
+                                            Text(text = unreadCount.toString())
+                                        }
+                                    }
+                                },
+                                modifier = Modifier.padding(end = 12.dp)
+                            ) {
+                                IconButton(
+                                    onClick = {
+                                        showNotifications = !showNotifications
+                                        // Bildirimleri açınca sayıyı sıfırla (Kırmızı nokta gider)
+                                        if (showNotifications) {
+                                            unreadCount = 0
+                                        }
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Notifications,
+                                        contentDescription = "Bildirimler",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(28.dp)
+                                    )
+                                }
+                            }
+
+                            // --- 5. Profil Resmi ---
+                            Image(
+                                painter = painterResource(id = userAvatar),
+                                contentDescription = "Profil",
+                                modifier = Modifier
+                                    .padding(end = 16.dp)
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFFFE0B2))
+                                    .border(1.dp, Color.White, CircleShape)
+                                    .clickable { onProfileClick() },
+                                contentScale = ContentScale.Crop
+                            )
                         },
                         colors = TopAppBarDefaults.topAppBarColors(containerColor = brandBlue)
                     )
